@@ -4,6 +4,7 @@ import java.util.Scanner;
 import java.util.stream.Stream;
 
 import chess.board.Chessboard;
+import chess.board.Position;
 import chess.piece.Piece;
 import chess.player.Player;
 
@@ -12,6 +13,7 @@ public class Game {
 	Chessboard chessboard;
 	Player player1;
 	Player player2;
+	Player winner;
 	
 	private Game() {
 		scan=new Scanner(System.in);
@@ -38,9 +40,14 @@ public class Game {
 	
 	public void start() {
 		selectPlayerPieceColor();
-		printChessboard();
-		turn(player1);
-		turn(player2);
+		while (true) {
+			if (isGameEnd()) {
+				System.out.println(winner.getName()+"님이 이겼습니다");
+				break;
+			}
+			turn(player1);
+			turn(player2);
+		}
 	}
 	
 	public void selectPlayerPieceColor() {
@@ -64,12 +71,43 @@ public class Game {
 	}
 	
 	public void turn(Player player) {
-		while(true) {
-		System.out.println("옮길말의 위치와 옮길 위치를 입력하세요.(가로,세로 순)");
-		String positionInput=scan.nextLine();
-		int[] position = Stream.of(positionInput.split(",")).mapToInt(Integer::parseInt).toArray();
-		if(chessboard.movePiece(position[0],position[1],position[2],position[3])) break;
-		}
+		Piece[][] squares=chessboard.getBoard();
 		printChessboard();
+		System.out.println(player.getName()+"님의 차례입니다.");
+		while (true) {
+			Castling castling=Castling.settingCastling(player, squares);
+			if(castling.checkPossible()) {
+				System.out.println("캐슬링이 가능합니다.캐슬링 하시겠습니까? 1.예 2.아니오");
+				int select=Integer.parseInt(scan.nextLine());
+				if(select==1) {
+					castling.move();
+					break;
+				}
+				if(select!=2)
+					continue;
+			}
+			System.out.println("옮길말의 위치와 옮길 위치를 입력하세요.(가로,세로 순)");
+			String positionInput = scan.nextLine();
+			int[] position = Stream.of(positionInput.split(",")).mapToInt(Integer::parseInt).toArray();
+			Position startPosition = new Position(position[1], position[0]);
+			Position endPosition = new Position(position[3], position[2]);
+			if (chessboard.movePiece(startPosition, endPosition)){	
+				break;
+			}	
+		}
+	}
+	
+	
+	
+	public boolean isGameEnd() {
+		if(chessboard.getKingState().equals("white")) {
+			winner=player1;
+			return true;
+		}
+		if(chessboard.getKingState().equals("black")) {
+			winner=player2;
+			return true;
+		}
+		return false;
 	}
 }

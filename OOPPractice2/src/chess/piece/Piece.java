@@ -7,5 +7,5 @@ public interface Piece {
 	Position getPosition();
 	String getEmoji();
 	void moveTo(Position position);
-	abstract boolean isMoveableArea(int startX,int startY,int endX,int endY);
+	abstract boolean isMovableArea(Position startPosition,Position endPosition);
 }

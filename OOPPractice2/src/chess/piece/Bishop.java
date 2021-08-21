@@ -11,10 +11,11 @@ public class Bishop extends PieceImpl{
 	}
 	
 	@Override
-	public boolean isMoveableArea(int startX,int startY,int endX,int endY) {
-		if(startX==endX || startY == endY)
+	public boolean isMovableArea(Position startPosition,Position endPosition) {
+		if(startPosition.getX()==endPosition.getX() || startPosition.getY()==endPosition.getY())
 			return false;
-		if(Math.abs(endX - startX) != Math.abs(endY - startY))
+		if(Math.abs(endPosition.getX() - startPosition.getX()) 
+				!= Math.abs(endPosition.getY() - startPosition.getY()))
 			return false;
 		return true;
 	}

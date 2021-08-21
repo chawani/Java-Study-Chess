@@ -26,5 +26,5 @@ abstract class PieceImpl implements Piece{
 	public void moveTo(Position position) {
 		this.position=position;
 	}
-	abstract public boolean isMoveableArea(int startX,int startY,int endX,int endY);
+	abstract public boolean isMovableArea(Position startPosition,Position endPosition);
 }

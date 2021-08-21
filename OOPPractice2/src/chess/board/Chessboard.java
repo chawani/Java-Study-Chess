@@ -17,6 +17,7 @@ public class Chessboard {
 	private final int RANK=8;
 	private Piece[][] squares;
 	private Rule rule;
+	private String losePlayerKing="";
 	
 	private Chessboard() {
 		this.squares=new Piece[RANK][FILE];
@@ -30,7 +31,7 @@ public class Chessboard {
 	public void setPieces() {
 		for (int x = 0; x < 8; x++) {
             squares[1][x]=new Pawn("black",new Position(1,x));
-            squares[6][x]=new Pawn("white",new Position(1,x));
+            squares[6][x]=new Pawn("white",new Position(6,x));
         }
         
         squares[0][3]=new Queen("black",new Position(0,3));
@@ -59,103 +60,43 @@ public class Chessboard {
 		return squares;
 	}
 	
-	public boolean movePiece(int startX,int startY,int endX,int endY) {
-		Piece piece=squares[startY][startX];
-		if(piece.isMoveableArea(startX, startY, endX, endY)
-				&&!isPlaceMyPiece(piece,endX,endY)) {
-			piece.moveTo(new Position(endY,endX));
-			squares[endY][endX]=piece;
-			squares[startY][startX]=null;
-			if(checkPromotion(piece))
-				squares[endY][endX]=rule.pawnPromotion(piece);
+	public boolean movePiece(Position startPosition,Position endPosition) {
+		Piece currentPiece=squares[startPosition.getY()][startPosition.getX()];
+		Piece destination=squares[endPosition.getY()][endPosition.getX()];
+		int plusValue=(currentPiece.getColor().equals("white"))?+1:-1;
+		Piece enpassantPiece=null;
+		if(endPosition.getY()!=0&&endPosition.getY()!=7)
+			enpassantPiece=squares[endPosition.getY()+plusValue][endPosition.getX()];
+		
+		if (rule.checkPieceMovable(startPosition,endPosition)) {
+			if(destination!=null)
+				if(destination.getClass().getName().equals("King"))
+					setKingState((King)destination);
+			if (rule.checkPromotion(currentPiece)) {
+				squares[endPosition.getY()][endPosition.getX()] = rule.pawnPromotion(currentPiece);
+				return true;
+			}
+			currentPiece.moveTo(endPosition);
+			squares[startPosition.getY()][startPosition.getX()] = null;
+			squares[endPosition.getY()][endPosition.getX()] = currentPiece;
+			return true;
+		}
+		if(destination==null&&rule.checkEnPassant(currentPiece, enpassantPiece)) {
+			currentPiece.moveTo(endPosition);
+			squares[startPosition.getY()][startPosition.getX()] = null;
+			squares[endPosition.getY()][endPosition.getX()] = currentPiece;
+			squares[endPosition.getY()+plusValue][endPosition.getX()]=null;
 			return true;
 		}
 		System.out.println("이곳에는 말을 둘 수 없습니다.");
 		return false;
 	}
 	
-	public boolean isPlaceMyPiece(Piece piece,int endX,int endY){
-		if(squares[endY][endX]!=null
-				&&piece.getColor()==squares[endY][endX].getColor()) return true;
-		return false;
+	public void setKingState(King king) {
+		losePlayerKing=king.getColor();
 	}
 	
-	public boolean checkPromotion(Piece piece) {
-		if(piece.getEmoji().equals("♙")||piece.getEmoji().equals("♟")) {
-				Pawn pawn=(Pawn)piece;
-				if(pawn.canPromotion()) return true;
-			}
-		return false;
-	}
-	
-	public void checkCastling(Player player) {
-		Scanner scan=new Scanner(System.in);
-		boolean queenSide=false,kingSide=false;
-		String sideSelect="";
-		String color=player.getPieceColor();
-		int y=color.equals("white")?7:0;
-		
-		King king=(King)squares[y][4];
-		Rook rook1=(Rook)squares[y][0];
-		Rook rook2=(Rook)squares[y][7];
-		
-		queenSide=checkQueenSideCastling(king,rook1);
-		kingSide=checkKingSideCastling(king,rook2);
-		
-		if(queenSide) {
-			System.out.println("퀸사이드로 캐슬링하시려면 퀸이라고 입력해주세요");
-			
-		}
-		if(kingSide) {
-			System.out.println("킹사이드로 캐슬링하시려면 킹이라고 입력해주세요");
-		}
-		
-		sideSelect=scan.nextLine();
-		if(sideSelect.equals("퀸")) {
-			squares[y][2]=king;
-			squares[y][4]=null;
-			squares[y][3]=rook1;
-			squares[y][0]=null;
-		}
-		if(sideSelect.equals("킹")) {
-			squares[y][6]=king;
-			squares[y][4]=null;
-			squares[y][5]=rook2;
-			squares[y][7]=null;
-		}
-	}
-	
-	public boolean checkKingSideCastling(King king,Rook rook) {
-		int y=(king.getColor().equals("white"))?7:0;
-		for(int i=5;i<7;i++) {
-			if(squares[y][i]!=null) return false;
-		}
-		if(!king.getValidCastling()||!rook.getValidCastling()) return false;
-		return true;
-	}
-	
-	public boolean checkQueenSideCastling(King king,Rook rook) {
-		int y=(king.getColor().equals("white"))?7:0;
-		for(int i=1;i<4;i++) {
-			if(squares[y][i]!=null) return false;
-		}
-		if(!king.getValidCastling()||!rook.getValidCastling()) return false;
-		return true;
-	}
-	
-	public boolean checkEnPassant(Pawn opponentPawn,Pawn myPawn) {
-		Position myPawnPosition=myPawn.getPosition();
-		Position oppoPawnPosition=opponentPawn.getPosition();
-		if(myPawn.getColor().equals("white")) {
-			if(oppoPawnPosition.getY()==3&&myPawnPosition.getY()==3
-					&&Math.abs(oppoPawnPosition.getX()-myPawnPosition.getX())==1)
-			{
-				squares[oppoPawnPosition.getY()-1][oppoPawnPosition.getX()]=myPawn;
-				myPawn.moveTo(oppoPawnPosition);
-				squares[myPawnPosition.getY()][myPawnPosition.getX()]=null;
-				squares[oppoPawnPosition.getY()][oppoPawnPosition.getX()]=null;
-			}
-		}	
-		return false;
+	public String getKingState() {
+		return losePlayerKing;
 	}
 }

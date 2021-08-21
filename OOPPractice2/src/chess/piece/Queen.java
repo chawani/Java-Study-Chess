@@ -9,16 +9,20 @@ public class Queen extends PieceImpl{
 		super.setEmoji(emoji);
 	}
 	@Override
-	public boolean isMoveableArea(int startX,int startY,int endX,int endY) {
+	public boolean isMovableArea(Position startPosition,Position endPosition) {
 		boolean bishopArea=true;
 		boolean rookArea=true;
-		if(startX==endX || startY == endY)
+		if(startPosition.getX()==endPosition.getX() 
+				|| startPosition.getY()==endPosition.getY())
 			bishopArea=false;
-		if(Math.abs(endX - startX) != Math.abs(endY - startY))
+		if(Math.abs(endPosition.getX() - startPosition.getX()) 
+				!= Math.abs(endPosition.getY() - startPosition.getY()))
 			bishopArea=false;
-		if(Math.abs(endX-startX)>0&&Math.abs(endY-startY)!=0)
+		if(Math.abs(endPosition.getX() - startPosition.getX())>0
+				&&Math.abs(endPosition.getY() - startPosition.getY())!=0)
 			rookArea=false;
-		if(Math.abs(endY-startY)>0&&Math.abs(endX-startX)!=0)
+		if(Math.abs(endPosition.getY() - startPosition.getY())>0
+				&&Math.abs(endPosition.getX() - startPosition.getX())!=0)
 			rookArea=false;
 		if(bishopArea||rookArea) return true;
 		return false;

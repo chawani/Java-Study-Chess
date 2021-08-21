@@ -3,13 +3,9 @@ package chess;
 import java.util.Scanner;
 
 import chess.board.Position;
-import chess.piece.Bishop;
-import chess.piece.King;
-import chess.piece.Knight;
 import chess.piece.Pawn;
 import chess.piece.Piece;
-import chess.piece.Queen;
-import chess.piece.Rook;
+import chess.player.Player;
 
 public class Rule {
 	private Piece[][] squares;
@@ -22,12 +18,56 @@ public class Rule {
 		return new Rule(squares);
 	}
 	
+	public boolean checkPieceMovable(Position startPosition,Position endPosition) {
+		Piece currentPiece=squares[startPosition.getY()][startPosition.getX()];
+		Piece destination=squares[endPosition.getY()][endPosition.getX()];
+		if (destination == null) {
+			if (currentPiece.isMovableArea(startPosition, endPosition))
+				return true;
+			return false;
+		}
+		if (destination.getColor() != currentPiece.getColor())
+			if (currentPiece.isMovableArea(startPosition, endPosition))
+				return true;
+		return false;
+	}
+	
+	public boolean checkPromotion(Piece piece) {
+		if (piece.getEmoji().equals("â™™") || piece.getEmoji().equals("â™Ÿ")) {
+			Pawn pawn = (Pawn) piece;
+			if (pawn.canPromotion())
+				return true;
+		}
+		return false;
+	}
+	
 	public Piece pawnPromotion(Piece piece) {
 		Pawn pawn=(Pawn)piece;
-		Position position=piece.getPosition();
-		System.out.println("PawnÀ» ¹«¾ùÀ¸·Î ¹Ù²Ù½Ã°Ú½À´Ï±î?(Äı,·è,ºñ¼ó,³ªÀÌÆ®·Î °¡´É)");
+		System.out.println("Pawnì„ ë¬´ì—‡ìœ¼ë¡œ ë°”ê¾¸ì‹œê² ìŠµë‹ˆê¹Œ?(í€¸,ë£©,ë¹„ìˆ,ë‚˜ì´íŠ¸ë¡œ ê°€ëŠ¥)");
 		Scanner scan=new Scanner(System.in);
 		String convertTo=scan.nextLine();
 		return pawn.promotion(convertTo);
+	}
+	
+	public void askCastling(Player player) {
+		Castling castling=Castling.settingCastling(player, squares);
+		if(castling.checkPossible()) {
+			castling.move();
+			squares=castling.getBoardSquares();
+		}
+	}
+	
+	public boolean checkEnPassant(Piece myPawn,Piece opponentPawn) {
+		if(opponentPawn==null) return false;
+		if(myPawn.getColor()==opponentPawn.getColor())
+			return false;
+		Position myPawnPosition=myPawn.getPosition();
+		Position oppoPawnPosition=opponentPawn.getPosition();
+		int y=(myPawn.getColor().equals("white"))?3:4;
+		if (oppoPawnPosition.getY() == y && myPawnPosition.getY() == y
+				&& Math.abs(oppoPawnPosition.getX() - myPawnPosition.getX()) == 1) {
+			return true;
+		}
+		return false;
 	}
 }

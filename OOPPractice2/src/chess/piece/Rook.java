@@ -10,10 +10,12 @@ public class Rook extends PieceImpl{
 		super.setEmoji(emoji);
 	}
 	@Override
-	public boolean isMoveableArea(int startX,int startY,int endX,int endY) {
-		if(Math.abs(endX-startX)>0&&Math.abs(endY-startY)!=0)
+	public boolean isMovableArea(Position startPosition,Position endPosition) {
+		if(Math.abs(endPosition.getX() - startPosition.getX())>0
+				&&Math.abs(endPosition.getY() - startPosition.getY())!=0)
 			return false;
-		if(Math.abs(endY-startY)>0&&Math.abs(endX-startX)!=0)
+		if(Math.abs(endPosition.getY() - startPosition.getY())>0
+				&&Math.abs(endPosition.getX() - startPosition.getX())!=0)
 			return false;
 		return true;
 	}

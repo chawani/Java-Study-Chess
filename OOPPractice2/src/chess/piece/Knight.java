@@ -9,10 +9,12 @@ public class Knight extends PieceImpl{
 		super.setEmoji(emoji);
 	}
 	@Override
-	public boolean isMoveableArea(int startX,int startY,int endX,int endY) {
-		if(Math.abs(endX - startX) == 2 && Math.abs(endY - startY) == 1)
+	public boolean isMovableArea(Position startPosition,Position endPosition) {
+		if(Math.abs(endPosition.getX() - startPosition.getX()) == 2 
+				&& Math.abs(endPosition.getY() - startPosition.getY()) == 1)
 			return true;
-		if(Math.abs(endX-startX) == 1 && Math.abs(endY - startY) == 2)
+		if(Math.abs(endPosition.getX() - startPosition.getX()) == 1 
+				&& Math.abs(endPosition.getY() - startPosition.getY()) == 2)
 			return true;
 		return false;
 	}
